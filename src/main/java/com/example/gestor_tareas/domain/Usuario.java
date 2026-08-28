@@ -13,11 +13,11 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotBlank
+	@NotBlank(message = "El nombre no puede estar vacio")
 	private String nombre;
 	
-	@NotBlank
-	@Email
+	@NotBlank(message = "El email es obligatorio")
+	@Email(message = "El email no tiene un formato válido")
 	private String email;
 	
 	@NotBlank

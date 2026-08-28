@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import com.example.gestor_tareas.domain.Usuario;
 import com.example.gestor_tareas.service.UsuarioService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
@@ -21,7 +23,7 @@ public class UsuarioController {
 	
 	//Endpoint para crear usuario
 	@PostMapping
-	public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
+	public ResponseEntity<Usuario> crearUsuario(@Valid @RequestBody Usuario usuario) {
 		
 		Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
 		
@@ -38,8 +40,6 @@ public class UsuarioController {
 		
 	}
 	
-	
-	
 	//Endpoint para buscar un usuario
 	@GetMapping("/{id}")
 	public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id){
@@ -50,9 +50,7 @@ public class UsuarioController {
 		
 	}
 	
-	
-	
-	//Endpoint para actualizar usuario
+	//Endpoint para actualizar usuario 
 	@PutMapping("/{id}")
 	public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {	
 		
@@ -71,7 +69,7 @@ public class UsuarioController {
 	}
 	
 	
-	
+	//Endpoint para eliminar usuario
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
 		
