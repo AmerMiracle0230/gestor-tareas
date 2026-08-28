@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.example.gestor_tareas.domain.Usuario;
+import com.example.gestor_tareas.exception.UsuarioNotFoundException;
 import com.example.gestor_tareas.repository.UsuarioRepository;
 
 // metodos de usuario : crear - buscarPorId- buscarTodos - actualizar - eliminar
@@ -55,27 +56,24 @@ public class UsuarioService {
 	
 	//buscar usarui por id
 	
-	public Optional<Usuario> buscarPorId(Long id) {
+	public Usuario buscarPorId(Long id) {
 		
-		if(id == null){
-			return Optional.empty();
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		
+		if(usuario.isPresent()){
+			return usuario.get();
 		}
 		
-		return usuarioRepository.findById(id);
+		throw new UsuarioNotFoundException("Usuario no encontrado");
 	}
 	
 	//actualizar usuario
 	
 	public Usuario actualizarUsuario(long id, String nombre, String email, String password) {
 		
-		Optional<Usuario> buscarUsuario = buscarPorId(id);
+		Usuario usuario = buscarPorId(id);
 		
-		Usuario usuario;
-		
-		if(buscarUsuario.isEmpty()) {
-			return null;
-		}
-		
+
 		if(nombre == null || nombre.isBlank()) {
 			return null;
 		}
@@ -88,7 +86,6 @@ public class UsuarioService {
 			return null;
 		}
 		
-		usuario = buscarUsuario.get();
 		
 		usuario.setNombre(nombre);
 		usuario.setEmail(email);
@@ -105,11 +102,7 @@ public class UsuarioService {
 			return false;
 		}
 		
-		Optional<Usuario> usuarioEliminar = buscarPorId(id);
-		
-		if(usuarioEliminar.isEmpty()) {
-			return false;
-		}
+		buscarPorId(id);
 		
 		usuarioRepository.deleteById(id);
 		

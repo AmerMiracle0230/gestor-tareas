@@ -1,6 +1,7 @@
 package com.example.gestor_tareas.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 public class Tarea {
@@ -8,14 +9,18 @@ public class Tarea {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+	
+	@NotBlank
     private String titulo;
 
+	@NotBlank
+	@Size(max= 100)
     private String descripcion;
 
     private boolean estado;
     
     @ManyToOne
+    @NotNull
     private Usuario usuario;
 
     public Tarea() {

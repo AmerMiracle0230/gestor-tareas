@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.gestor_tareas.domain.Tarea;
 import com.example.gestor_tareas.domain.Usuario;
+import com.example.gestor_tareas.exception.TareaNotFoundException;
 import com.example.gestor_tareas.repository.TareaRepository;
 import com.example.gestor_tareas.repository.UsuarioRepository;
 
@@ -61,24 +62,22 @@ public class TareaService {
 	}
 	
 	//buscar una Tarea por id
-	public Optional<Tarea> buscarTareaPorId(Long id){
+	public Tarea buscarTareaPorId(Long id){
 		
-		if(id == null) {
-			return Optional.empty();
+		Optional<Tarea> tarea = tareaRepository.findById(id);
+		
+		if(tarea.isPresent()) {
+			return tarea.get();
 		}
 		
-		return tareaRepository.findById(id);
+		throw new TareaNotFoundException("Tarea no encontrada");
 	}
 	
 	
 	//actuzalizar tarea
 	public Tarea actualizarTarea(Long id, String titulo, String descripcion, boolean estado){
 		
-		Optional<Tarea> tarea = buscarTareaPorId(id);
-		 
-		if(tarea.isEmpty()) {
-			return null;
-		}
+		Tarea tarea = buscarTareaPorId(id);
 		
 		if(titulo == null || titulo.isBlank()) {
 			return null;
@@ -87,16 +86,15 @@ public class TareaService {
 		if(descripcion == null || descripcion.isBlank()) {
 			return null;
 		}
+
 		
-		Tarea tareaActualizar = tarea.get();
-		
-		tareaActualizar.setTitulo(titulo);
-		tareaActualizar.setDescripcion(descripcion);
-		tareaActualizar.setEstado(estado);
-		
+		tarea.setTitulo(titulo);
+		tarea.setDescripcion(descripcion);
+		tarea.setEstado(estado);
 		
 		
-		return tareaRepository.save(tareaActualizar);
+		
+		return tareaRepository.save(tarea);
 	}
 	
 	//Eliminar tarea
@@ -106,13 +104,10 @@ public class TareaService {
 			return false;
 		}
 		
-		Optional<Tarea> tarea = buscarTareaPorId(id);
+		buscarTareaPorId(id);
 		
-		if(tarea.isEmpty()) {
-			return false;
-		}
 		
-		tareaRepository.delete(tarea.get());
+		tareaRepository.deleteById(id);;
 		
 		return true;
 		

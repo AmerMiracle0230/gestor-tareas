@@ -41,13 +41,10 @@ public class TareaController {
 	//Endpoint buscar una tarea por id 
 	@GetMapping("/{id}")
 	public ResponseEntity<Tarea> buscarTareaPorId(@PathVariable Long id){
-		Optional<Tarea> tarea = tareaService.buscarTareaPorId(id);
 		
-		if(tarea.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		
-		return ResponseEntity.ok(tarea.get());
+		Tarea tarea = tareaService.buscarTareaPorId(id);
+
+		return ResponseEntity.ok(tarea);
 	}
 	
 	//Endpoint actualizar una tarea

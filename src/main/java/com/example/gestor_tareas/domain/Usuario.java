@@ -1,6 +1,10 @@
 package com.example.gestor_tareas.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 public class Usuario {
@@ -8,9 +12,18 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@NotBlank
 	private String nombre;
+	
+	@NotBlank
+	@Email
 	private String email;
+	
+	@NotBlank
 	private String password;
+	@OneToMany(mappedBy = "usuario")
+	private List<Tarea> tareas= new ArrayList<>();
 	
 	public Usuario() {
 		super();
