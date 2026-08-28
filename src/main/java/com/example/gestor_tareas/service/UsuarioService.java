@@ -1,12 +1,17 @@
 package com.example.gestor_tareas.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.example.gestor_tareas.domain.Usuario;
+import com.example.gestor_tareas.dto.usuario.UsuarioCreateDTO;
+import com.example.gestor_tareas.dto.usuario.UsuarioResponseDTO;
+import com.example.gestor_tareas.dto.usuario.UsuarioUpdateDTO;
 import com.example.gestor_tareas.exception.UsuarioNotFoundException;
+import com.example.gestor_tareas.mapper.UsuarioMapper;
 import com.example.gestor_tareas.repository.UsuarioRepository;
 
 // metodos de usuario : crear - buscarPorId- buscarTodos - actualizar - eliminar
@@ -14,99 +19,82 @@ import com.example.gestor_tareas.repository.UsuarioRepository;
 @Service
 public class UsuarioService {
 	private final UsuarioRepository usuarioRepository;
+	private final UsuarioMapper usuarioMapper;
 
-	public UsuarioService(UsuarioRepository usuarioRepository) {
+	
+	
+	public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
 		this.usuarioRepository = usuarioRepository;
+		this.usuarioMapper = usuarioMapper;
 	}
-	
-	//crear nuevo usuario con validaciones basicas
-	public Usuario crearUsuario(Usuario usuario) {
+
+	//crear nuevo usuario  *****
+	public UsuarioResponseDTO crearUsuario(UsuarioCreateDTO usuarioDTO) {
 		
-		//ver si es null
-		if(usuario == null) {	
-			return null;			
-		}
+		Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
 		
-		//ver si el nombre esta vacio o es null
-		if(usuario.getNombre() == null || usuario.getNombre().isBlank() ) {
-			return null;
-		}
+		Usuario usuarioGuardado = usuarioRepository.save(usuario);
 		
-		//ver si el email es null o esta vacio
-		if(usuario.getEmail() == null || usuario.getEmail().isBlank()){
-			return null;
-		}
-		
-		//ver si el contraseña es null o esta vacio
-		if(usuario.getPassword() == null || usuario.getPassword().isBlank()) {
-			return null;
-		}
-		
-		//guardar y devolver usuario
-		return usuarioRepository.save(usuario);
+		return usuarioMapper.toResponseDTO(usuarioGuardado);
 	}
 	
 	
-	//buscar todos los usarios
+	//buscar todos los usarios *******
 	
-	public List<Usuario> buscarTodosLosUsuarios(){
+	public List<UsuarioResponseDTO> buscarTodosLosUsuarios(){
 		
-		return usuarioRepository.findAll();
+		List<Usuario> usuarios = usuarioRepository.findAll(); 
+		
+		List<UsuarioResponseDTO> usuariosDTO = new ArrayList<>();
+		
+		for(Usuario u : usuarios) {
+			usuariosDTO.add(usuarioMapper.toResponseDTO(u));
+		}
+		
+		return usuariosDTO;
 	}
 	
 	//buscar usarui por id
 	
-	public Usuario buscarPorId(Long id) {
+	public UsuarioResponseDTO buscarPorId(Long id) {
 		
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
 		
 		if(usuario.isPresent()){
-			return usuario.get();
+			return usuarioMapper.toResponseDTO(usuario.get());
 		}
 		
 		throw new UsuarioNotFoundException("Usuario no encontrado");
 	}
 	
-	//actualizar usuario
+	//actualizar usuario obteniendo datos de DTO ******
 	
-	public Usuario actualizarUsuario(long id, String nombre, String email, String password) {
+	public UsuarioResponseDTO actualizarUsuario(long id, UsuarioUpdateDTO usuarioDTO) {
 		
-		Usuario usuario = buscarPorId(id);
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
 		
+		if(usuario.isEmpty()){
+			throw new UsuarioNotFoundException("Usuario no encontrado");
+		}
 
-		if(nombre == null || nombre.isBlank()) {
-			return null;
-		}
+		usuarioMapper.updateEntity(usuarioDTO, usuario.get());
 		
-		if(email == null || email.isBlank()) {
-			return null;
-		}
+		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());
 		
-		if(password == null || password.isBlank()) {
-			return null;
-		}
-		
-		
-		usuario.setNombre(nombre);
-		usuario.setEmail(email);
-		usuario.setPassword(password);
-		
-		return usuarioRepository.save(usuario);
+		return usuarioMapper.toResponseDTO(usuarioGuardar);
 		
 	}
 	
-	//eliminar usuario
-	public boolean eliminarUsuario(Long id) {
+	//eliminar usuario *****+
+	public void eliminarUsuario(Long id) {
 		
-		if(id == null) {
-			return false;
+		
+		if(!usuarioRepository.existsById(id)) {
+			throw new UsuarioNotFoundException("Usuario no encontrado");
 		}
-		
-		buscarPorId(id);
 		
 		usuarioRepository.deleteById(id);
 		
-		return true;
 	}
 	
   
