@@ -1,14 +1,18 @@
 package com.example.gestor_tareas.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.gestor_tareas.domain.Tarea;
+import com.example.gestor_tareas.dto.tarea.TareaCreateDTO;
+import com.example.gestor_tareas.dto.tarea.TareaPatchDTO;
+import com.example.gestor_tareas.dto.tarea.TareaResponseDTO;
+import com.example.gestor_tareas.dto.tarea.TareaUpdateDTO;
 import com.example.gestor_tareas.service.TareaService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/tareas")
@@ -21,9 +25,9 @@ public class TareaController {
 	
 	//Endpoint crea tarea
 	@PostMapping
-	public ResponseEntity<Tarea> crearTarea(@RequestBody Tarea tarea) {
+	public ResponseEntity<TareaResponseDTO> crearTarea(@Valid @RequestBody TareaCreateDTO tareaDTO) {
 		
-		Tarea tareaCreada = tareaService.crearTarea(tarea);
+		TareaResponseDTO tareaCreada = tareaService.crearTarea(tareaDTO);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(tareaCreada);
 		
@@ -31,49 +35,47 @@ public class TareaController {
 	
 	//Endpoint buscar todas las tareas de un usurio
 	@GetMapping
-	public ResponseEntity<List<Tarea>> buscarTareas(@RequestParam Long usuarioId){
+	public ResponseEntity<List<TareaResponseDTO>> buscarTareas(@RequestParam Long usuarioId){
 		
-		List<Tarea> tareas = tareaService.mostrarTareas(usuarioId);
+		List<TareaResponseDTO> tareas = tareaService.mostrarTareas(usuarioId);
 		
 		return ResponseEntity.ok(tareas);
 	}
 	
 	//Endpoint buscar una tarea por id 
 	@GetMapping("/{id}")
-	public ResponseEntity<Tarea> buscarTareaPorId(@PathVariable Long id){
+	public ResponseEntity<TareaResponseDTO> buscarTareaPorId(@PathVariable Long id){
 		
-		Tarea tarea = tareaService.buscarTareaPorId(id);
+		TareaResponseDTO tarea = tareaService.buscarTareaPorId(id);
 
 		return ResponseEntity.ok(tarea);
 	}
 	
 	//Endpoint actualizar una tarea
 	@PutMapping("/{id}")
-	public ResponseEntity<Tarea> actualizarTarea(@PathVariable Long id, @RequestBody Tarea tarea) {
+	public ResponseEntity<TareaResponseDTO> actualizarTarea(@PathVariable Long id,@Valid @RequestBody TareaUpdateDTO tareaDTO) {
 		
-		Tarea tareaActualizar = tareaService.actualizarTarea(
-				id, 
-				tarea.getTitulo(), 
-				tarea.getDescripcion(), 
-				tarea.isEstado());
-		
-		if(tareaActualizar == null) {
-			return ResponseEntity.notFound().build();
-		}
-		
-		
+		TareaResponseDTO tareaActualizar = tareaService.actualizarTarea(id, tareaDTO);
+	
+
 		return ResponseEntity.ok(tareaActualizar);
 	}
+	
+	//Endpoint actualizar parcial una tarea
+	@PatchMapping("/{id}")
+	public ResponseEntity<TareaResponseDTO> actualizarParcialTarea(@PathVariable Long id,@RequestBody TareaPatchDTO tareaDTO) {
+			
+			TareaResponseDTO tareaActualizar = tareaService.actualizarParcialTarea(id, tareaDTO);
+
+			return ResponseEntity.ok(tareaActualizar);
+	}
+		
 	
 	//Endpoint eliminar una tarea
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> eliminarTarea(@PathVariable Long id) {
 		
-		boolean eliminar = tareaService.eliminarTarea(id);
-		
-		if(!eliminar) {
-			return ResponseEntity.notFound().build();
-		}
+		tareaService.eliminarTarea(id);
 		
 		return ResponseEntity.noContent().build();
 	}

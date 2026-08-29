@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.gestor_tareas.domain.Usuario;
 import com.example.gestor_tareas.dto.usuario.UsuarioCreateDTO;
+import com.example.gestor_tareas.dto.usuario.UsuarioPatchDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioResponseDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioUpdateDTO;
 import com.example.gestor_tareas.exception.UsuarioNotFoundException;
@@ -26,6 +27,7 @@ public class UsuarioService {
 	public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
 		this.usuarioRepository = usuarioRepository;
 		this.usuarioMapper = usuarioMapper;
+		
 	}
 
 	//crear nuevo usuario  *****
@@ -36,6 +38,7 @@ public class UsuarioService {
 		Usuario usuarioGuardado = usuarioRepository.save(usuario);
 		
 		return usuarioMapper.toResponseDTO(usuarioGuardado);
+		
 	}
 	
 	
@@ -54,7 +57,7 @@ public class UsuarioService {
 		return usuariosDTO;
 	}
 	
-	//buscar usarui por id
+	//buscar usarui por id *******
 	
 	public UsuarioResponseDTO buscarPorId(Long id) {
 		
@@ -67,7 +70,7 @@ public class UsuarioService {
 		throw new UsuarioNotFoundException("Usuario no encontrado");
 	}
 	
-	//actualizar usuario obteniendo datos de DTO ******
+	//actualizar usuario obteniendo datos de DTO (actualiza todo) ******
 	
 	public UsuarioResponseDTO actualizarUsuario(long id, UsuarioUpdateDTO usuarioDTO) {
 		
@@ -85,7 +88,24 @@ public class UsuarioService {
 		
 	}
 	
-	//eliminar usuario *****+
+	//actualiza parcialmente 
+	public UsuarioResponseDTO actualizarParcialUsuario(long id, UsuarioPatchDTO usuarioDTO) {
+		
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		
+		if(usuario.isEmpty()){
+			throw new UsuarioNotFoundException("Usuario no encontrado");
+		}
+
+		usuarioMapper.updatePartialEntity(usuarioDTO, usuario.get());
+		
+		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());
+		
+		return usuarioMapper.toResponseDTO(usuarioGuardar);
+		
+	}
+	
+	//eliminar usuario *****
 	public void eliminarUsuario(Long id) {
 		
 		

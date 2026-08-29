@@ -1,5 +1,6 @@
 package com.example.gestor_tareas.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,7 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.example.gestor_tareas.domain.Tarea;
 import com.example.gestor_tareas.domain.Usuario;
+import com.example.gestor_tareas.dto.tarea.TareaCreateDTO;
+import com.example.gestor_tareas.dto.tarea.TareaPatchDTO;
+import com.example.gestor_tareas.dto.tarea.TareaResponseDTO;
+import com.example.gestor_tareas.dto.tarea.TareaUpdateDTO;
 import com.example.gestor_tareas.exception.TareaNotFoundException;
+import com.example.gestor_tareas.exception.UsuarioNotFoundException;
+import com.example.gestor_tareas.mapper.TareaMapper;
 import com.example.gestor_tareas.repository.TareaRepository;
 import com.example.gestor_tareas.repository.UsuarioRepository;
 
@@ -15,102 +22,104 @@ import com.example.gestor_tareas.repository.UsuarioRepository;
 public class TareaService {
 	private final TareaRepository tareaRepository;
 	private final UsuarioRepository usuarioRepository;
-		
-	public TareaService(TareaRepository tareaRepository, UsuarioRepository usuarioRepository) {
+	private final TareaMapper tareaMapper;
+	
+
+	public TareaService(TareaRepository tareaRepository, UsuarioRepository usuarioRepository, TareaMapper tareaMapper) {
 		this.tareaRepository = tareaRepository;
 		this.usuarioRepository = usuarioRepository;
+		this.tareaMapper = tareaMapper;
 	}
 
-	//crear tarea
-	public Tarea crearTarea(Tarea tarea) {
+	//crear tarea con DTO de respuesta ****
+	public TareaResponseDTO crearTarea(TareaCreateDTO tareaDTO) {
 		
-		if(tarea == null) {
-			return null;
+		Tarea tarea = tareaMapper.toEntity(tareaDTO);
+		
+		Optional<Usuario> usuario =  usuarioRepository.findById(tareaDTO.getUsuarioId());
+		
+		if(usuario.isEmpty()) {
+			throw new UsuarioNotFoundException("Usuario no encontrado");
 		}
 		
-		if(tarea.getTitulo() == null || tarea.getTitulo().isBlank()) {
-			return null;
-		}
+		tarea.setUsuario(usuario.get());
 		
-		if(tarea.getDescripcion() == null || tarea.getDescripcion().isBlank()){
-			return null;
-		}
+		Tarea tareaGuardado = tareaRepository.save(tarea);
 		
-		if(tarea.getUsuario() == null) {
-			return null;
-		}
-		
-		long idUsuario = tarea.getUsuario().getId();
-		
-		Optional<Usuario> usuarioBuscar = usuarioRepository.findById(idUsuario);
-		
-		if(usuarioBuscar.isEmpty()) {
-			return null;
-		}
-		
-		tarea.setUsuario(usuarioBuscar.get());
-		
-		
-		return tareaRepository.save(tarea);
+		return tareaMapper.toResponseDTO(tareaGuardado);
 	}
-	
-	//mostrar todos por id de usuario
-	public List<Tarea> mostrarTareas(Long usuarioId){
+	 
+	//mostrar todos por id de usuario *****
+	public List<TareaResponseDTO> mostrarTareas(Long usuarioId){
 		
-		return tareaRepository.findByUsuarioId(usuarioId);
+		List<Tarea> tareas =  tareaRepository.findByUsuarioId(usuarioId);
+		
+		List<TareaResponseDTO> tareasDTO = new ArrayList<>();
+		
+		for(Tarea t : tareas) {
+			tareasDTO.add(tareaMapper.toResponseDTO(t));
+		}
+		
+		return tareasDTO;
 		
 	}
 	
 	//buscar una Tarea por id
-	public Tarea buscarTareaPorId(Long id){
+	public TareaResponseDTO buscarTareaPorId(Long id){
 		
 		Optional<Tarea> tarea = tareaRepository.findById(id);
 		
 		if(tarea.isPresent()) {
-			return tarea.get();
+			return tareaMapper.toResponseDTO(tarea.get());
 		}
 		
 		throw new TareaNotFoundException("Tarea no encontrada");
 	}
 	
 	
-	//actuzalizar tarea
-	public Tarea actualizarTarea(Long id, String titulo, String descripcion, boolean estado){
+	//actuzalizar tarea todos los campos
+	public TareaResponseDTO actualizarTarea(Long id, TareaUpdateDTO tareaDTO){
 		
-		Tarea tarea = buscarTareaPorId(id);
-		
-		if(titulo == null || titulo.isBlank()) {
-			return null;
-		}
-		
-		if(descripcion == null || descripcion.isBlank()) {
-			return null;
-		}
+		Optional<Tarea> tarea = tareaRepository.findById(id);
 
+		if(tarea.isEmpty()) {
+			throw new TareaNotFoundException("Tarea no encontrada");
+		}
 		
-		tarea.setTitulo(titulo);
-		tarea.setDescripcion(descripcion);
-		tarea.setEstado(estado);
+		tareaMapper.updateEntity(tareaDTO, tarea.get());
 		
+		Tarea tareaGuardar = tareaRepository.save(tarea.get());
 		
-		
-		return tareaRepository.save(tarea);
+		return tareaMapper.toResponseDTO(tareaGuardar);
 	}
 	
-	//Eliminar tarea
-	public boolean eliminarTarea(Long id) {
+	//Actuzaliar parcialmente tareas
+	public TareaResponseDTO actualizarParcialTarea(Long id, TareaPatchDTO tareaDTO){
 		
-		if(id == null) {
-			return false;
+		Optional<Tarea> tarea = tareaRepository.findById(id);
+
+		if(tarea.isEmpty()) {
+			throw new TareaNotFoundException("Tarea no encontrada");
 		}
 		
-		buscarTareaPorId(id);
+		tareaMapper.updateParcialEntity(tareaDTO, tarea.get());
 		
+		Tarea tareaGuardar = tareaRepository.save(tarea.get());
 		
-		tareaRepository.deleteById(id);;
+		return tareaMapper.toResponseDTO(tareaGuardar);
+	}
+	
+	
+	//Eliminar tarea
+	public void eliminarTarea(Long id) {
 		
-		return true;
-		
+
+		if(!tareaRepository.existsById(id)) {
+			throw new TareaNotFoundException("Tarea no encontrada");
+		}
+	
+		tareaRepository.deleteById(id);
+			
 	}
 	
 }

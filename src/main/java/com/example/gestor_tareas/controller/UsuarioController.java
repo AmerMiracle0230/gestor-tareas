@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.gestor_tareas.domain.Usuario;
 import com.example.gestor_tareas.dto.usuario.UsuarioCreateDTO;
+import com.example.gestor_tareas.dto.usuario.UsuarioPatchDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioResponseDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioUpdateDTO;
 import com.example.gestor_tareas.service.UsuarioService;
@@ -60,14 +61,22 @@ public class UsuarioController {
 	public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(@PathVariable Long id,@Valid  @RequestBody UsuarioUpdateDTO usuarioDTO) {	
 		
 		UsuarioResponseDTO usuario = usuarioService.actualizarUsuario(id, usuarioDTO);
-		
-		if(usuario == null) {
-			return ResponseEntity.notFound().build();
-		}
+
 		
 		return ResponseEntity.ok(usuario);
 		
 	}
+	
+	@PatchMapping("/{id}")
+	public ResponseEntity<UsuarioResponseDTO> actualizarParcialUsuario(@PathVariable Long id,@RequestBody UsuarioPatchDTO usuarioDTO) {	
+		
+		UsuarioResponseDTO usuario = usuarioService.actualizarParcialUsuario(id, usuarioDTO);
+
+		
+		return ResponseEntity.ok(usuario);
+		
+	}
+	
 	
 	
 	//Endpoint para eliminar usuario *****
