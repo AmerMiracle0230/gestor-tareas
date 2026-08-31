@@ -15,6 +15,7 @@ import com.example.gestor_tareas.exception.EmailAlreadyExistsException;
 import com.example.gestor_tareas.exception.UsuarioNotFoundException;
 import com.example.gestor_tareas.mapper.UsuarioMapper;
 import com.example.gestor_tareas.repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 // metodos de usuario : crear - buscarPorId- buscarTodos - actualizar - eliminar
 
@@ -22,16 +23,18 @@ import com.example.gestor_tareas.repository.UsuarioRepository;
 public class UsuarioService {
 	private final UsuarioRepository usuarioRepository;
 	private final UsuarioMapper usuarioMapper;
+	private final PasswordEncoder passwordEncoder;
 
-	
-	
-	public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
-		this.usuarioRepository = usuarioRepository;
-		this.usuarioMapper = usuarioMapper;
-		
-	}
 
 	//crear nuevo usuario  *****
+	public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper,
+	        PasswordEncoder passwordEncoder) {
+		this.usuarioRepository = usuarioRepository;
+		this.usuarioMapper = usuarioMapper;
+		this.passwordEncoder = passwordEncoder;
+	}
+
+
 	public UsuarioResponseDTO crearUsuario(UsuarioCreateDTO usuarioDTO) {
 		
 		Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
@@ -40,6 +43,8 @@ public class UsuarioService {
 		if(usuarioRepository.existsByEmail(usuario.getEmail())) {
 			throw new EmailAlreadyExistsException("El email ya esta registrado");
 		}
+		
+		usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 		
 		Usuario usuarioGuardado = usuarioRepository.save(usuario);
 		
@@ -94,6 +99,8 @@ public class UsuarioService {
 		
 		usuarioMapper.updateEntity(usuarioDTO, usuario.get());
 		
+		usuario.get().setPassword(passwordEncoder.encode(usuario.get().getPassword()));
+		
 		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());
 		
 		return usuarioMapper.toResponseDTO(usuarioGuardar);
@@ -118,9 +125,14 @@ public class UsuarioService {
 
 		            throw new EmailAlreadyExistsException("El email ya esta registrado");
 		        }
+		        
 		}
 		
 		usuarioMapper.updatePartialEntity(usuarioDTO, usuario.get());
+		
+		if(usuarioDTO.getPassword() != null){
+			usuario.get().setPassword(passwordEncoder.encode(usuarioDTO.getPassword()));
+		}
 		
 		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());
 		
