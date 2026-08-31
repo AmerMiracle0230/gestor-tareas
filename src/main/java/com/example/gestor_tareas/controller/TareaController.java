@@ -63,7 +63,7 @@ public class TareaController {
 	
 	//Endpoint actualizar parcial una tarea
 	@PatchMapping("/{id}")
-	public ResponseEntity<TareaResponseDTO> actualizarParcialTarea(@PathVariable Long id,@RequestBody TareaPatchDTO tareaDTO) {
+	public ResponseEntity<TareaResponseDTO> actualizarParcialTarea(@PathVariable Long id,@Valid @RequestBody TareaPatchDTO tareaDTO) {
 			
 			TareaResponseDTO tareaActualizar = tareaService.actualizarParcialTarea(id, tareaDTO);
 

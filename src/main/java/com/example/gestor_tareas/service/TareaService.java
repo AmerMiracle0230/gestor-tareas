@@ -52,7 +52,14 @@ public class TareaService {
 	//mostrar todos por id de usuario *****
 	public List<TareaResponseDTO> mostrarTareas(Long usuarioId){
 		
+		Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
+		
+		if(usuario.isEmpty()) {
+			throw new UsuarioNotFoundException("Usuario no encontrado");
+		}
+		
 		List<Tarea> tareas =  tareaRepository.findByUsuarioId(usuarioId);
+		
 		
 		List<TareaResponseDTO> tareasDTO = new ArrayList<>();
 		

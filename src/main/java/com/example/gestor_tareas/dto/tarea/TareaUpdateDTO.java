@@ -1,11 +1,20 @@
 package com.example.gestor_tareas.dto.tarea;
 
+import jakarta.validation.constraints.*;
+
+
 public class TareaUpdateDTO {
-	private String titulo;
-	private String descripcion;
-	private boolean estado;
 	
-	
+	@NotBlank(message="El titulo es obligatorio")
+	@Size(min=6, max=100, message="El titulo debe tener entre 6 y 100 caracteres")
+    private String titulo;
+
+	@NotBlank(message="La descripcion es obligatorio")
+    private String descripcion;
+
+    private boolean estado;
+
+		
 	public TareaUpdateDTO() {
 	}
 	

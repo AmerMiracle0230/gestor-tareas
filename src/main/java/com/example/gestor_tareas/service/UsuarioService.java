@@ -11,6 +11,7 @@ import com.example.gestor_tareas.dto.usuario.UsuarioCreateDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioPatchDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioResponseDTO;
 import com.example.gestor_tareas.dto.usuario.UsuarioUpdateDTO;
+import com.example.gestor_tareas.exception.EmailAlreadyExistsException;
 import com.example.gestor_tareas.exception.UsuarioNotFoundException;
 import com.example.gestor_tareas.mapper.UsuarioMapper;
 import com.example.gestor_tareas.repository.UsuarioRepository;
@@ -34,6 +35,11 @@ public class UsuarioService {
 	public UsuarioResponseDTO crearUsuario(UsuarioCreateDTO usuarioDTO) {
 		
 		Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
+		
+		
+		if(usuarioRepository.existsByEmail(usuario.getEmail())) {
+			throw new EmailAlreadyExistsException("El email ya esta registrado");
+		}
 		
 		Usuario usuarioGuardado = usuarioRepository.save(usuario);
 		
@@ -80,6 +86,12 @@ public class UsuarioService {
 			throw new UsuarioNotFoundException("Usuario no encontrado");
 		}
 
+		Optional<Usuario> usuarioEmail = usuarioRepository.findByEmail(usuarioDTO.getEmail());
+		
+		if(usuarioEmail.isPresent() && !usuarioEmail.get().getId().equals(usuario.get().getId())) {
+			throw new EmailAlreadyExistsException("El email ya esta registrado");
+		}
+		
 		usuarioMapper.updateEntity(usuarioDTO, usuario.get());
 		
 		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());
@@ -96,7 +108,18 @@ public class UsuarioService {
 		if(usuario.isEmpty()){
 			throw new UsuarioNotFoundException("Usuario no encontrado");
 		}
+		
 
+		if( usuarioDTO.getEmail() != null) {
+			
+			  Optional<Usuario> usuarioEmail = usuarioRepository.findByEmail(usuarioDTO.getEmail());
+
+		        if(usuarioEmail.isPresent() && !usuarioEmail.get().getId().equals(usuario.get().getId())) {
+
+		            throw new EmailAlreadyExistsException("El email ya esta registrado");
+		        }
+		}
+		
 		usuarioMapper.updatePartialEntity(usuarioDTO, usuario.get());
 		
 		Usuario usuarioGuardar = usuarioRepository.save(usuario.get());

@@ -27,4 +27,14 @@ public class GlobalExceptionHandler {
 		
 	}
 	
+	
+	//Exception para ERROR 409 Email existente
+	@ExceptionHandler(EmailAlreadyExistsException.class)
+	public ResponseEntity<String> emailExistente(EmailAlreadyExistsException ex){
+				
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+		
+	}
+	
+	
 }

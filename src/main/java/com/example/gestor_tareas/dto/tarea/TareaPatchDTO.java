@@ -1,9 +1,13 @@
 package com.example.gestor_tareas.dto.tarea;
 
+import jakarta.validation.constraints.*;
+
 public class TareaPatchDTO {
 	
+		@Size(min = 6, max = 100, message = "El título debe tener entre 6 y 100 caracteres")
 	 	private String titulo;
 
+		@Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
 	    private String descripcion;
 
 	    private Boolean estado;
