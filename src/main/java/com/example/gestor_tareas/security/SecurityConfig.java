@@ -11,12 +11,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public class SecurityConfig {
 
 	 private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	 private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-	    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-	        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-	    }
+	 
 	    
-	    @Bean
+	    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+			JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+	}
+
+
+
+		@Bean
 	    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
 	        http
@@ -30,6 +37,10 @@ public class SecurityConfig {
 	                .requestMatchers("/usuarios").permitAll()
 	                .requestMatchers("/auth/login").permitAll()
 	                .anyRequest().authenticated()
+	            )
+	            
+	            .exceptionHandling(exception ->
+	            exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)
 	            )
 
 	            .addFilterBefore(
